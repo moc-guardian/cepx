@@ -3,7 +3,11 @@ from __future__ import annotations
 import re
 
 from cepx.errors import CepxError, ProviderError
-from cepx.providers import Provider, get_available_providers
+from cepx.providers import (
+    DEFAULT_PROVIDER_NAMES,
+    Provider,
+    get_available_providers,
+)
 
 CEP_SIZE = 8
 _NON_DIGITS = re.compile(r"\D+")
@@ -41,7 +45,7 @@ def _resolve_providers(providers: list[str] | None) -> list[Provider]:
     available = get_available_providers()
 
     if providers is None or providers == []:
-        return list(available.values())
+        return [available[name] for name in DEFAULT_PROVIDER_NAMES]
 
     if not isinstance(providers, list):
         raise CepxError(

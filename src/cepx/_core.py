@@ -9,7 +9,11 @@ import httpx
 from cepx._types import Address
 from cepx._validation import prepare
 from cepx.errors import CepxError, ProviderError
-from cepx.providers import DEFAULT_TIMEOUT, Provider
+from cepx.providers import DEFAULT_TIMEOUT, HttpProvider, Provider
+
+
+def _needs_client(providers: list[Provider]) -> bool:
+    return any(isinstance(provider, HttpProvider) for provider in providers)
 
 
 def cep(
@@ -44,23 +48,13 @@ def _wrap_error(provider: Provider, error: Exception) -> ProviderError:
 
 
 def _run_sync(
-    client: httpx.Client,
+    client: httpx.Client | None,
     provider: Provider,
     cep: str,
     timeout: float,
 ) -> Address:
     try:
-        spec = provider.build_request(cep)
-
-        response = client.request(
-            spec.method,
-            spec.url,
-            headers=spec.headers,
-            content=spec.content,
-            data=spec.data,
-            timeout=timeout,
-        )
-        return provider.parse(response.status_code, response.text)
+        return provider.resolve_sync(cep, client, timeout)
     except ProviderError:
         raise
     except Exception as error:
@@ -68,23 +62,13 @@ def _run_sync(
 
 
 async def _run_async(
-    client: httpx.AsyncClient,
+    client: httpx.AsyncClient | None,
     provider: Provider,
     cep: str,
     timeout: float,
 ) -> Address:
     try:
-        spec = provider.build_request(cep)
-
-        response = await client.request(
-            spec.method,
-            spec.url,
-            headers=spec.headers,
-            content=spec.content,
-            data=spec.data,
-            timeout=timeout,
-        )
-        return provider.parse(response.status_code, response.text)
+        return await provider.resolve_async(cep, client, timeout)
     except ProviderError:
         raise
     except Exception as error:
@@ -96,6 +80,19 @@ def _first_success_sync(
     cep: str,
     timeout: float,
 ) -> Address:
+    # A single provider needs neither the race machinery nor (for the offline
+    # local provider) an httpx client at all.
+    if len(providers) == 1:
+        provider = providers[0]
+        client = httpx.Client(http2=True) if _needs_client(providers) else None
+        try:
+            return _run_sync(client, provider, cep, timeout)
+        except ProviderError as error:
+            raise _aggregate([error]) from error
+        finally:
+            if client is not None:
+                client.close()
+
     errors: list[ProviderError | None] = [None] * len(providers)
 
     with httpx.Client(http2=True) as client:
@@ -123,6 +120,18 @@ async def _first_success_async(
     cep: str,
     timeout: float,
 ) -> Address:
+    if len(providers) == 1:
+        provider = providers[0]
+        needs = _needs_client(providers)
+        client = httpx.AsyncClient(http2=True) if needs else None
+        try:
+            return await _run_async(client, provider, cep, timeout)
+        except ProviderError as error:
+            raise _aggregate([error]) from error
+        finally:
+            if client is not None:
+                await client.aclose()
+
     async with httpx.AsyncClient(http2=True) as client:
         tasks = [
             asyncio.ensure_future(_run_async(client, provider, cep, timeout))

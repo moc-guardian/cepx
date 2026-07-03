@@ -4,14 +4,14 @@ import re
 
 from cepx._types import Address, RequestSpec
 from cepx.errors import ProviderError
-from cepx.providers.base import Provider
+from cepx.providers.base import HttpProvider
 
 _RETURN_RE = re.compile(r"<return>(.*)</return>")
 _FAULT_RE = re.compile(r"<faultstring>(.*)</faultstring>")
 _UNPARSEABLE = "Could not parse the response XML."
 
 
-class Correios(Provider):
+class Correios(HttpProvider):
     name = "correios"
     connection_error_message = "Failed to connect to the Correios provider."
 

@@ -17,3 +17,12 @@ dist/
 .coverage.*
 htmlcov/
 coverage.xml
+
+# synthetic/generated CEP database (built by tools/build_cep_db.py)
+src/cepx/data/*.sqlite
+
+# CEP Aberto ODbL data (do not commit into this MIT repo)
+dumps/
+*.cepaberto_*.csv
+/cities.csv
+/states.csv

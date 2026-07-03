@@ -4,10 +4,10 @@ import json
 
 from cepx._types import Address, RequestSpec
 from cepx.errors import ProviderError
-from cepx.providers.base import Provider
+from cepx.providers.base import HttpProvider
 
 
-class BrasilAPI(Provider):
+class BrasilAPI(HttpProvider):
     name = "brasilapi"
     connection_error_message = "Failed to connect to the BrasilAPI provider."
 
