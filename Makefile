@@ -18,8 +18,7 @@ help:
 setup:
 	uv venv --clear --python 3.14
 	uv sync --all-groups
-	$(UV_RUN_CMD) pre-commit install --hook-type pre-commit
-	$(UV_RUN_CMD) pre-commit install --hook-type pre-push
+	$(UV_RUN_CMD) pre-commit install
 
 unit:
 	$(UV_RUN_CMD) pytest -m unit
