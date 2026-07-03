@@ -1,8 +1,9 @@
 # cepx
 
-Busca por CEP integrada aos serviços dos Correios, ViaCEP, WideNet e BrasilAPI.
-Python port of [`cep-promise`](https://github.com/BrasilAPI/cep-promise), with
-both synchronous and asynchronous APIs.
+Brazilian CEP (postal code) lookup integrated with the Correios, ViaCEP,
+WideNet, and BrasilAPI services. Python port of
+[`cep-promise`](https://github.com/BrasilAPI/cep-promise), with both
+synchronous and asynchronous APIs.
 
 Providers are queried concurrently and the **first successful** response wins.
 The lookup only fails once **every** provider fails, aggregating each error.

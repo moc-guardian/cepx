@@ -1,7 +1,7 @@
 [project]
 name = "cepx"
 version = "0.1.0"
-description = "Busca por CEP integrada aos serviços dos Correios, ViaCEP, WideNet e BrasilAPI (sync e async). Python port do cep-promise."
+description = "Brazilian CEP (postal code) lookup integrated with the Correios, ViaCEP, WideNet, and BrasilAPI services (sync and async). Python port of cep-promise."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
