@@ -80,10 +80,11 @@ def lookup(cep):
 ```
 
 Do this rather than passing `providers=["local", ...]` in a single call: mixing
-`local` with network providers forces the concurrent race path, which builds an
-HTTP client every call, so you'd pay that cost on *every*
-lookup, even the ones `local` answers instantly. The two-step form keeps hits at
-microsecond speed and only pays for the network on genuine misses.
+`local` with network providers forces the concurrent race path, which spins up a
+thread pool and fires the network requests on *every* lookup, even the ones
+`local` answers instantly (they're just cancelled once `local` wins). The
+two-step form keeps hits fully offline at microsecond speed and only touches the
+network on genuine misses.
 
 ## Network lookups
 

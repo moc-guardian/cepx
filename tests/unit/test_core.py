@@ -235,3 +235,10 @@ def test_timeout_is_passed_through():
     with pytest.raises(cepx.CepxError):
         cepx.cep("05010000", providers=["brasilapi"], timeout=0.5)
     assert route.called
+
+
+def test_sync_http_client_is_reused_across_calls():
+    from cepx._core import _shared_sync_client
+
+    # The http2 client is built once and reused (constructing one costs ms).
+    assert _shared_sync_client() is _shared_sync_client()
