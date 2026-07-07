@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help setup test unit cov e2e pc check package clean
+.PHONY: help setup test unit cov e2e pc check bench-local package clean
 
 UV_RUN_CMD = uv run --no-sync
 
@@ -12,6 +12,8 @@ help:
 	@echo "  e2e     Run end-to-end tests against live providers (network)"
 	@echo "  pc      Run all pre-commit hooks on all files"
 	@echo "  check   Run unit tests, coverage report, and pre-commit"
+	@echo "  bench-local  Benchmark the local provider against cepx-data"
+	@echo "               (e.g. make bench-local ARGS=\"--n 200000\")"
 	@echo "  package Build the sdist and wheel into dist/"
 	@echo "  clean   Clean development environment"
 
@@ -37,6 +39,9 @@ pc:
 	$(UV_RUN_CMD) pre-commit run --all-files
 
 check: unit cov pc
+
+bench-local:
+	uv run --with cepx-data python tools/bench_local.py $(ARGS)
 
 package:
 	uv build
