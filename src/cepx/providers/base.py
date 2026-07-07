@@ -89,6 +89,7 @@ class HttpProvider(Provider):
             data=spec.data,
             timeout=timeout,
         )
+
         return self.parse(response.status_code, response.text)
 
     async def resolve_async(
@@ -110,4 +111,5 @@ class HttpProvider(Provider):
             data=spec.data,
             timeout=timeout,
         )
+
         return self.parse(response.status_code, response.text)
