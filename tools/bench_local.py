@@ -30,15 +30,19 @@ import cepx
 from cepx.providers.local import LocalProvider
 
 _LOOKUP_SQL = (
-    "SELECT r.end, n.name FROM ranges r JOIN names n ON n.id = r.name_id "
-    "WHERE r.start <= ? ORDER BY r.start DESC LIMIT 1"
+    "SELECT s.sigla, c.nome, n.nome, st.nome FROM ceps "
+    "JOIN states s ON s.id = ceps.uf_id "
+    "JOIN cities c ON c.id = ceps.city_id "
+    "JOIN neighborhoods n ON n.id = ceps.neigh_id "
+    "JOIN streets st ON st.id = ceps.street_id "
+    "WHERE ceps.cep = ?"
 )
 
 
 def _resolve_db(db_arg: str | None) -> str:
     db = db_arg or os.environ.get("CEPX_DB") or LocalProvider().db_path
 
-    if not os.path.exists(db):
+    if not db or not os.path.exists(db):
         raise SystemExit(f"database not found: {db} (set CEPX_DB or --db)")
 
     return db
@@ -48,7 +52,7 @@ def _load_starts(db: str) -> list[int]:
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
 
     try:
-        return [row[0] for row in con.execute("SELECT start FROM ranges")]
+        return [row[0] for row in con.execute("SELECT cep FROM ceps")]
     finally:
         con.close()
 
@@ -144,8 +148,7 @@ def main() -> None:
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
 
     def raw(cep: str) -> bool:
-        row = con.execute(_LOOKUP_SQL, (int(cep),)).fetchone()
-        return row is not None and int(cep) <= row[0]
+        return con.execute(_LOOKUP_SQL, (int(cep),)).fetchone() is not None
 
     # Layer 2: the shipped provider (connection per call).
     provider = LocalProvider(db)

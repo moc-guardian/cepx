@@ -36,6 +36,9 @@ classifiers = [
 ]
 dependencies = ["httpx[http2]>=0.27"]
 
+[project.optional-dependencies]
+local = ["cepx-data>=0.1.2"]
+
 [project.urls]
 Homepage = "https://github.com/moc-guardian/cepx"
 Repository = "https://github.com/moc-guardian/cepx"

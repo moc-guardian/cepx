@@ -10,42 +10,64 @@ from cepx._types import Address
 from cepx.errors import ProviderError
 from cepx.providers.base import Provider
 
-##──── Default location of the bundled database. Override with the CEPX_DB env
-##──── variable or by passing db_path to LocalProvider(). The database itself
-##──── is built by tools/build_cep_db.py from a source address dataset.
-DEFAULT_DB_PATH = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "data", "cepx.sqlite")
-)
-
-##──── Bisect-equivalent in SQL: the largest range whose start is <= the CEP,
-##──── then a bounds-check against that range's end (done in Python below).
 _LOOKUP_SQL = (
-    "SELECT r.end, n.name "
-    "FROM ranges r JOIN names n ON n.id = r.name_id "
-    "WHERE r.start <= ? "
-    "ORDER BY r.start DESC LIMIT 1"
+    "SELECT s.sigla, c.nome, n.nome, st.nome "
+    "FROM ceps "
+    "JOIN states s ON s.id = ceps.uf_id "
+    "JOIN cities c ON c.id = ceps.city_id "
+    "JOIN neighborhoods n ON n.id = ceps.neigh_id "
+    "JOIN streets st ON st.id = ceps.street_id "
+    "WHERE ceps.cep = ?"
 )
 
-##──── Read-only connections are cached per (thread, db_path): opening one per
-##──── lookup dominates the cost, and a connection is not safe to share across
-##──── threads, so thread-local storage gives us reuse without that hazard.
+# Read-only connections are cached per (thread, db_path): opening one per
+# lookup dominates the cost, and a connection is not safe to share across
+# threads, so thread-local storage gives us reuse without that hazard.
 _local = threading.local()
+
+
+def _bundled_db_path() -> str | None:
+    """Path to the database shipped by cepx-data (the `cepx[local]` extra)."""
+    try:
+        import cepx_data
+    except ImportError:
+        return None
+
+    return cepx_data.db_path()
+
+
+def _discover_db_path(explicit: str | None) -> str | None:
+    """Resolve the database path: explicit arg, then CEPX_DB, then cepx-data."""
+    if explicit:
+        return explicit
+
+    env = os.environ.get("CEPX_DB")
+
+    if env:
+        return env
+
+    return _bundled_db_path()
 
 
 def _get_connection(db_path: str) -> sqlite3.Connection:
     connections: dict[str, sqlite3.Connection] | None = getattr(
-        _local, "connections", None
+        _local,
+        "connections",
+        None,
     )
+
     if connections is None:
         connections = _local.connections = {}
 
     connection = connections.get(db_path)
+
     if connection is None:
         if not os.path.exists(db_path):
             raise ProviderError(
                 f"Local CEP database not found at {db_path}.",
                 LocalProvider.name,
             )
+
         connection = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         connections[db_path] = connection
 
@@ -53,31 +75,37 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
 
 
 class LocalProvider(Provider):
-    """Offline provider: resolves a CEP against a bundled SQLite database.
+    """Offline provider: resolves a CEP against a local SQLite database.
 
-    Ranges are stored as `(start, end, name_id)` with an index on `start`,
-    and locality/street names are deduplicated into a `names` table. A lookup
-    is a single indexed range query — no network access.
+    The database is the one shipped by the `cepx-data` package (installed via
+    `pip install "cepx[local]"`); pass `db_path` or set `CEPX_DB` to use a
+    different file.
     """
 
     name = "local"
     connection_error_message = "Failed to read the local CEP database."
 
     def __init__(self, db_path: str | None = None) -> None:
-        self.db_path = db_path or os.environ.get("CEPX_DB") or DEFAULT_DB_PATH
+        self.db_path = _discover_db_path(db_path)
 
     def _lookup(self, cep: str) -> Address:
-        cep_int = int(cep)
-        connection = _get_connection(self.db_path)
-        row = connection.execute(_LOOKUP_SQL, (cep_int,)).fetchone()
+        if self.db_path is None:
+            raise ProviderError(
+                "No local CEP database available. Install 'cepx[local]' "
+                "or set CEPX_DB to a database path.",
+                self.name,
+            )
 
-        if row is None or cep_int > row[0]:
+        connection = _get_connection(self.db_path)
+        row = connection.execute(_LOOKUP_SQL, (int(cep),)).fetchone()
+
+        if row is None:
             raise ProviderError(
                 "CEP not found in the local database.",
                 self.name,
             )
 
-        state, city, neighborhood, street = row[1].split("|")
+        state, city, neighborhood, street = row
 
         return self.build_address(
             cep=cep,
