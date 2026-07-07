@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/moc-guardian/cepx/compare/v0.1.1...v0.1.2) (2026-07-07)
+
+
+### Features
+
+* add local provider as package extra `cepx[local]` ([#5](https://github.com/moc-guardian/cepx/issues/5)) ([c31175d](https://github.com/moc-guardian/cepx/commit/c31175d7e5bf89c6abe1097eb932c6b6242bbaf3))
+
 ## [0.1.1](https://github.com/moc-guardian/cepx/compare/v0.1.0...v0.1.1) (2026-07-03)
 
 
