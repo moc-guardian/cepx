@@ -36,6 +36,12 @@ classifiers = [
 ]
 dependencies = ["httpx[http2]>=0.27"]
 
+[project.urls]
+Homepage = "https://github.com/moc-guardian/cepx"
+Repository = "https://github.com/moc-guardian/cepx"
+Issues = "https://github.com/moc-guardian/cepx/issues"
+Changelog = "https://github.com/moc-guardian/cepx/blob/main/CHANGELOG.md"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
