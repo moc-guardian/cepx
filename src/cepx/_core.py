@@ -80,11 +80,13 @@ def _first_success_sync(
     cep: str,
     timeout: float,
 ) -> Address:
-    # A single provider needs neither the race machinery nor (for the offline
-    # local provider) an httpx client at all.
     if len(providers) == 1:
+        # A single provider needs neither the race machinery nor
+        # (for the offline local provider) an httpx client at all.
         provider = providers[0]
-        client = httpx.Client(http2=True) if _needs_client(providers) else None
+        needs = _needs_client(providers)
+        client = httpx.Client(http2=True) if needs else None
+
         try:
             return _run_sync(client, provider, cep, timeout)
         except ProviderError as error:
@@ -121,9 +123,12 @@ async def _first_success_async(
     timeout: float,
 ) -> Address:
     if len(providers) == 1:
+        # A single provider needs neither the race machinery nor
+        # (for the offline local provider) an httpx client at all.
         provider = providers[0]
         needs = _needs_client(providers)
         client = httpx.AsyncClient(http2=True) if needs else None
+
         try:
             return await _run_async(client, provider, cep, timeout)
         except ProviderError as error:
