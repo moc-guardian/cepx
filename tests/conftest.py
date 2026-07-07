@@ -133,6 +133,17 @@ def expected_address():
     }
 
 
+@pytest.fixture(autouse=True)
+def _clear_bundled_db_cache():
+    # LocalProvider caches the cepx-data path for the process; tests that swap
+    # the cepx_data module in/out must not see each other's cached result.
+    from cepx.providers.local import _bundled_db_path
+
+    _bundled_db_path.cache_clear()
+
+    yield
+
+
 __all__ = (
     "BRASILAPI_URL",
     "CORREIOS_ALT_URL",

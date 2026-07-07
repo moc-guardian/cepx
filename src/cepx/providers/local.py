@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import functools
+import importlib
 import os
 import sqlite3
 import threading
@@ -26,10 +28,16 @@ _LOOKUP_SQL = (
 _local = threading.local()
 
 
+@functools.lru_cache(maxsize=1)
 def _bundled_db_path() -> str | None:
-    """Path to the database shipped by cepx-data (the `cepx[local]` extra)."""
+    """Path to the database shipped by cepx-data (the `cepx[local]` extra).
+
+    Cached: the installed package location is fixed for the process lifetime,
+    and `importlib.resources` resolution is the dominant per-lookup cost. Call
+    `_bundled_db_path.cache_clear()` if the environment changes (tests do).
+    """
     try:
-        import cepx_data
+        cepx_data = importlib.import_module("cepx_data")
     except ImportError:
         return None
 
