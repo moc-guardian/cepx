@@ -67,6 +67,24 @@ cepx.cep("05010000", providers=["local"])
 A CEP that isn't in the dataset is a clean miss (`provider_error`); fall back to
 the network providers for full coverage if you need it.
 
+### Offline-first with network fallback
+
+Prefer the local database and only touch the network when a CEP isn't covered:
+
+```python
+def lookup(cep):
+    try:
+        return cepx.cep(cep, providers=["local"])   # ~microseconds on a hit
+    except cepx.CepxError:
+        return cepx.cep(cep)                        # network only on a miss
+```
+
+Do this rather than passing `providers=["local", ...]` in a single call: mixing
+`local` with network providers forces the concurrent race path, which builds an
+HTTP client every call, so you'd pay that cost on *every*
+lookup, even the ones `local` answers instantly. The two-step form keeps hits at
+microsecond speed and only pays for the network on genuine misses.
+
 ## Network lookups
 
 Without the extra (or when you don't request `local`), cepx queries the live
