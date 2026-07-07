@@ -115,12 +115,16 @@ class LocalProvider(Provider):
 
         state, city, neighborhood, street = row
 
-        return self.build_address(
+        # The schema guarantees non-null, already-clean strings (and `cep` is
+        # the padded lookup key), so build the Address directly and skip the
+        # defensive normalization build_address() does for untrusted responses.
+        return Address(
             cep=cep,
             state=state,
             city=city,
             neighborhood=neighborhood,
             street=street,
+            provider=self.name,
         )
 
     def resolve_sync(
