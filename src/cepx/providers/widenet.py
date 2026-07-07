@@ -4,10 +4,10 @@ import json
 
 from cepx._types import Address, RequestSpec
 from cepx.errors import ProviderError
-from cepx.providers.base import Provider
+from cepx.providers.base import HttpProvider
 
 
-class WideNet(Provider):
+class WideNet(HttpProvider):
     name = "widenet"
     connection_error_message = "Failed to connect to the WideNet provider."
 

@@ -4,12 +4,12 @@ import json
 
 from cepx._types import Address, RequestSpec
 from cepx.errors import ProviderError
-from cepx.providers.base import Provider
+from cepx.providers.base import HttpProvider
 
 _NOT_FOUND = "CEP not found in the Correios database."
 
 
-class CorreiosAlt(Provider):
+class CorreiosAlt(HttpProvider):
     name = "correios-alt"
     connection_error_message = "Failed to connect to the Correios Alt provider."
 

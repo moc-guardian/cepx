@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
+import functools
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import cast
 
@@ -9,7 +11,25 @@ import httpx
 from cepx._types import Address
 from cepx._validation import prepare
 from cepx.errors import CepxError, ProviderError
-from cepx.providers import DEFAULT_TIMEOUT, Provider
+from cepx.providers import DEFAULT_TIMEOUT, HttpProvider, Provider
+
+
+def _needs_client(providers: list[Provider]) -> bool:
+    return any(isinstance(provider, HttpProvider) for provider in providers)
+
+
+@functools.lru_cache(maxsize=1)
+def _shared_sync_client() -> httpx.Client:
+    """Process-wide http2 client, built once and reused across lookups.
+
+    Constructing an http2 client costs a few milliseconds; reusing one keeps
+    that off every network call and pools connections. Closed at exit.
+    """
+    client = httpx.Client(http2=True)
+
+    atexit.register(client.close)
+
+    return client
 
 
 def cep(
@@ -44,23 +64,13 @@ def _wrap_error(provider: Provider, error: Exception) -> ProviderError:
 
 
 def _run_sync(
-    client: httpx.Client,
+    client: httpx.Client | None,
     provider: Provider,
     cep: str,
     timeout: float,
 ) -> Address:
     try:
-        spec = provider.build_request(cep)
-
-        response = client.request(
-            spec.method,
-            spec.url,
-            headers=spec.headers,
-            content=spec.content,
-            data=spec.data,
-            timeout=timeout,
-        )
-        return provider.parse(response.status_code, response.text)
+        return provider.resolve_sync(cep, client, timeout)
     except ProviderError:
         raise
     except Exception as error:
@@ -68,23 +78,13 @@ def _run_sync(
 
 
 async def _run_async(
-    client: httpx.AsyncClient,
+    client: httpx.AsyncClient | None,
     provider: Provider,
     cep: str,
     timeout: float,
 ) -> Address:
     try:
-        spec = provider.build_request(cep)
-
-        response = await client.request(
-            spec.method,
-            spec.url,
-            headers=spec.headers,
-            content=spec.content,
-            data=spec.data,
-            timeout=timeout,
-        )
-        return provider.parse(response.status_code, response.text)
+        return await provider.resolve_async(cep, client, timeout)
     except ProviderError:
         raise
     except Exception as error:
@@ -96,24 +96,34 @@ def _first_success_sync(
     cep: str,
     timeout: float,
 ) -> Address:
-    errors: list[ProviderError | None] = [None] * len(providers)
-
-    with httpx.Client(http2=True) as client:
-        executor = ThreadPoolExecutor(max_workers=len(providers))
+    if len(providers) == 1:
+        # A single provider needs neither the race machinery nor
+        # (for the offline local provider) an httpx client at all.
+        provider = providers[0]
+        client = _shared_sync_client() if _needs_client(providers) else None
 
         try:
-            futures = {
-                executor.submit(_run_sync, client, provider, cep, timeout): i
-                for i, provider in enumerate(providers)
-            }
+            return _run_sync(client, provider, cep, timeout)
+        except ProviderError as error:
+            raise _aggregate([error]) from error
 
-            for future in as_completed(futures):
-                try:
-                    return future.result()
-                except ProviderError as error:
-                    errors[futures[future]] = error
-        finally:
-            executor.shutdown(wait=False, cancel_futures=True)
+    errors: list[ProviderError | None] = [None] * len(providers)
+    client = _shared_sync_client()
+    executor = ThreadPoolExecutor(max_workers=len(providers))
+
+    try:
+        futures = {
+            executor.submit(_run_sync, client, provider, cep, timeout): i
+            for i, provider in enumerate(providers)
+        }
+
+        for future in as_completed(futures):
+            try:
+                return future.result()
+            except ProviderError as error:
+                errors[futures[future]] = error
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
 
     raise _aggregate(errors)
 
@@ -123,6 +133,25 @@ async def _first_success_async(
     cep: str,
     timeout: float,
 ) -> Address:
+    # Unlike the sync client, the AsyncClient is built per call: it is bound to
+    # the running event loop, so a process-wide instance would break across
+    # loops (e.g. repeated asyncio.run). A long-lived loop can reuse cepx via a
+    # cached client of its own if the construction cost matters.
+    if len(providers) == 1:
+        # A single provider needs neither the race machinery nor
+        # (for the offline local provider) an httpx client at all.
+        provider = providers[0]
+        needs = _needs_client(providers)
+        client = httpx.AsyncClient(http2=True) if needs else None
+
+        try:
+            return await _run_async(client, provider, cep, timeout)
+        except ProviderError as error:
+            raise _aggregate([error]) from error
+        finally:
+            if client is not None:
+                await client.aclose()
+
     async with httpx.AsyncClient(http2=True) as client:
         tasks = [
             asyncio.ensure_future(_run_async(client, provider, cep, timeout))

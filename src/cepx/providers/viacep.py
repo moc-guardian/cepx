@@ -4,10 +4,10 @@ import json
 
 from cepx._types import Address, RequestSpec
 from cepx.errors import ProviderError
-from cepx.providers.base import Provider
+from cepx.providers.base import HttpProvider
 
 
-class ViaCep(Provider):
+class ViaCep(HttpProvider):
     name = "viacep"
     connection_error_message = "Failed to connect to the ViaCEP provider."
 

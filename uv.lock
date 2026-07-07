@@ -50,10 +50,15 @@ wheels = [
 
 [[package]]
 name = "cepx"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "httpx", extra = ["http2"] },
+]
+
+[package.optional-dependencies]
+local = [
+    { name = "cepx-data" },
 ]
 
 [package.dev-dependencies]
@@ -71,7 +76,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "httpx", extras = ["http2"], specifier = ">=0.27" }]
+requires-dist = [
+    { name = "cepx-data", marker = "extra == 'local'", specifier = ">=0.1.2" },
+    { name = "httpx", extras = ["http2"], specifier = ">=0.27" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -82,6 +90,15 @@ dev = [
     { name = "respx", specifier = ">=0.22" },
     { name = "ruff", specifier = ">=0.9" },
     { name = "ty", specifier = ">=0.0.1a1" },
+]
+
+[[package]]
+name = "cepx-data"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/7f/fc47f37944cce06a3e0c9cb67c34ea14d41b65941cde3bbe04ba368cc146/cepx_data-0.1.2.tar.gz", hash = "sha256:6271cc693fa35552c3c95ae52b74b612795ac4a33eabe8c9b323115be2f3c61e", size = 17885544 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/6f/d107a54d6ebe990f52904de64c40827b23e96d53f7ca0d9d8d21c17b4cfa/cepx_data-0.1.2-py3-none-any.whl", hash = "sha256:e133de20591b05562fc71cdc9974bebcce6db3028d3dfb129363e99dcfe15efc", size = 17899290 },
 ]
 
 [[package]]
