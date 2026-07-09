@@ -26,12 +26,13 @@ def test_none_providers_uses_all():
         "viacep",
         "widenet",
         "brasilapi",
+        "opencep",
     ]
 
 
 def test_empty_providers_uses_all():
     _, providers = prepare("05010000", [])
-    assert len(providers) == 5
+    assert len(providers) == 6
 
 
 def test_selected_providers_preserve_order():

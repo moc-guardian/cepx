@@ -11,6 +11,7 @@ from tests.conftest import (
     CORREIOS_URL,
     CORREIOS_XML_FAULT,
     CORREIOS_XML_FOUND,
+    OPENCEP_URL,
     VIACEP_URL,
     WIDENET_URL,
 )
@@ -35,6 +36,11 @@ def test_viacep(mock_all_found, expected_address):
 def test_widenet(mock_all_found, expected_address):
     address = cepx.cep("05010000", providers=["widenet"])
     _assert_matches(address, "widenet", expected_address)
+
+
+def test_opencep(mock_all_found, expected_address):
+    address = cepx.cep("05010000", providers=["opencep"])
+    _assert_matches(address, "opencep", expected_address)
 
 
 def test_correios(mock_all_found, expected_address):
@@ -74,6 +80,26 @@ def test_widenet_not_found():
         cepx.cep("05010000", providers=["widenet"])
     assert info.value.errors[0].message == (
         "CEP not found in the WideNet database."
+    )
+
+
+@respx.mock
+def test_opencep_not_found():
+    respx.get(OPENCEP_URL).respond(status_code=404, json={})
+    with pytest.raises(cepx.CepxError) as info:
+        cepx.cep("05010000", providers=["opencep"])
+    assert info.value.errors[0].message == (
+        "CEP not found in the OpenCEP database."
+    )
+
+
+@respx.mock
+def test_opencep_non_2xx_is_connection_error():
+    respx.get(OPENCEP_URL).respond(status_code=500)
+    with pytest.raises(cepx.CepxError) as info:
+        cepx.cep("05010000", providers=["opencep"])
+    assert info.value.errors[0].message == (
+        "Failed to connect to the OpenCEP provider."
     )
 
 

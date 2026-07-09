@@ -5,6 +5,7 @@ from cepx.providers.brasilapi import BrasilAPI
 from cepx.providers.correios import Correios
 from cepx.providers.correios_alt import CorreiosAlt
 from cepx.providers.local import LocalProvider
+from cepx.providers.opencep import OpenCep
 from cepx.providers.viacep import ViaCep
 from cepx.providers.widenet import WideNet
 
@@ -17,6 +18,7 @@ DEFAULT_PROVIDER_NAMES = (
     "viacep",
     "widenet",
     "brasilapi",
+    "opencep",
 )
 
 
@@ -27,6 +29,7 @@ def get_available_providers() -> dict[str, Provider]:
         "viacep": ViaCep(),
         "widenet": WideNet(),
         "brasilapi": BrasilAPI(),
+        "opencep": OpenCep(),
         "local": LocalProvider(),
     }
 
@@ -39,6 +42,7 @@ __all__ = (
     "CorreiosAlt",
     "HttpProvider",
     "LocalProvider",
+    "OpenCep",
     "Provider",
     "ViaCep",
     "WideNet",
