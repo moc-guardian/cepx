@@ -7,6 +7,7 @@ import respx
 BRASILAPI_URL = "https://brasilapi.com.br/api/cep/v1/05010000"
 VIACEP_URL = "https://viacep.com.br/ws/05010000/json/"
 WIDENET_URL = "https://cdn.apicep.com/file/apicep/05010-000.json"
+OPENCEP_URL = "https://opencep.com/v1/05010000"
 
 CORREIOS_URL = (
     "https://apps.correios.com.br"
@@ -33,7 +34,14 @@ CORREIOS_XML_FAULT = (
     "</soap:Fault></soap:Body></soap:Envelope>"
 )
 
-PROVIDER_NAMES = ["correios", "correios-alt", "viacep", "widenet", "brasilapi"]
+PROVIDER_NAMES = [
+    "correios",
+    "correios-alt",
+    "viacep",
+    "widenet",
+    "brasilapi",
+    "opencep",
+]
 
 
 def stub_found(router, name):
@@ -69,6 +77,16 @@ def stub_found(router, name):
                 "address": "Rua Caiubi",
             }
         )
+    elif name == "opencep":
+        router.get(OPENCEP_URL).respond(
+            json={
+                "cep": "05010-000",
+                "logradouro": "Rua Caiubi",
+                "bairro": "Perdizes",
+                "localidade": "São Paulo",
+                "uf": "SP",
+            }
+        )
     elif name == "correios":
         router.post(CORREIOS_URL).respond(text=CORREIOS_XML_FOUND)
     elif name == "correios-alt":
@@ -98,6 +116,8 @@ def stub_failed(router, name):
         router.get(WIDENET_URL).respond(
             json={"status": 404, "ok": False, "message": "not found"}
         )
+    elif name == "opencep":
+        router.get(OPENCEP_URL).respond(status_code=404, json={})
     elif name == "correios":
         router.post(CORREIOS_URL).respond(
             status_code=500, text=CORREIOS_XML_FAULT
@@ -150,6 +170,7 @@ __all__ = (
     "CORREIOS_URL",
     "CORREIOS_XML_FAULT",
     "CORREIOS_XML_FOUND",
+    "OPENCEP_URL",
     "PROVIDER_NAMES",
     "VIACEP_URL",
     "WIDENET_URL",

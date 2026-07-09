@@ -89,7 +89,7 @@ network on genuine misses.
 ## Network lookups
 
 Without the extra (or when you don't request `local`), cepx queries the live
-providers (Correios, ViaCEP, WideNet, and BrasilAPI) **concurrently**, and the
+providers (Correios, ViaCEP, WideNet, BrasilAPI, and OpenCEP) **concurrently**, and the
 **first successful** response wins. The lookup only fails once **every** provider
 fails, aggregating each error.
 
