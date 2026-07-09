@@ -27,12 +27,13 @@ def test_none_providers_uses_all():
         "widenet",
         "brasilapi",
         "opencep",
+        "awesomeapi",
     ]
 
 
 def test_empty_providers_uses_all():
     _, providers = prepare("05010000", [])
-    assert len(providers) == 6
+    assert len(providers) == 7
 
 
 def test_selected_providers_preserve_order():

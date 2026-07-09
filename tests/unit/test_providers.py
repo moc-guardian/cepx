@@ -6,6 +6,7 @@ import respx
 
 import cepx
 from tests.conftest import (
+    AWESOMEAPI_URL,
     BRASILAPI_URL,
     CORREIOS_ALT_URL,
     CORREIOS_URL,
@@ -41,6 +42,11 @@ def test_widenet(mock_all_found, expected_address):
 def test_opencep(mock_all_found, expected_address):
     address = cepx.cep("05010000", providers=["opencep"])
     _assert_matches(address, "opencep", expected_address)
+
+
+def test_awesomeapi(mock_all_found, expected_address):
+    address = cepx.cep("05010000", providers=["awesomeapi"])
+    _assert_matches(address, "awesomeapi", expected_address)
 
 
 def test_correios(mock_all_found, expected_address):
@@ -100,6 +106,28 @@ def test_opencep_non_2xx_is_connection_error():
         cepx.cep("05010000", providers=["opencep"])
     assert info.value.errors[0].message == (
         "Failed to connect to the OpenCEP provider."
+    )
+
+
+@respx.mock
+def test_awesomeapi_not_found():
+    respx.get(AWESOMEAPI_URL).respond(
+        status_code=404, json={"code": "not_found"}
+    )
+    with pytest.raises(cepx.CepxError) as info:
+        cepx.cep("05010000", providers=["awesomeapi"])
+    assert info.value.errors[0].message == (
+        "CEP not found in the AwesomeAPI database."
+    )
+
+
+@respx.mock
+def test_awesomeapi_non_2xx_is_connection_error():
+    respx.get(AWESOMEAPI_URL).respond(status_code=500)
+    with pytest.raises(cepx.CepxError) as info:
+        cepx.cep("05010000", providers=["awesomeapi"])
+    assert info.value.errors[0].message == (
+        "Failed to connect to the AwesomeAPI provider."
     )
 
 

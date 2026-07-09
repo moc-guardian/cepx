@@ -28,6 +28,7 @@ def test_first_success_wins_sync(mock_all_found, expected_address):
         "widenet",
         "brasilapi",
         "opencep",
+        "awesomeapi",
     }
 
 
@@ -86,6 +87,7 @@ def test_all_failed_sync(mock_all_failed):
         "widenet",
         "brasilapi",
         "opencep",
+        "awesomeapi",
     }
 
 
@@ -93,7 +95,7 @@ async def test_all_failed_async(mock_all_failed):
     with pytest.raises(cepx.CepxError) as info:
         await cepx.acep("05010000")
     assert info.value.type == "provider_error"
-    assert len(info.value.errors) == 6
+    assert len(info.value.errors) == 7
 
 
 def test_aggregated_errors_preserve_provider_order(mock_all_failed):
@@ -106,6 +108,7 @@ def test_aggregated_errors_preserve_provider_order(mock_all_failed):
         "widenet",
         "brasilapi",
         "opencep",
+        "awesomeapi",
     ]
 
 

@@ -8,6 +8,7 @@ BRASILAPI_URL = "https://brasilapi.com.br/api/cep/v1/05010000"
 VIACEP_URL = "https://viacep.com.br/ws/05010000/json/"
 WIDENET_URL = "https://cdn.apicep.com/file/apicep/05010-000.json"
 OPENCEP_URL = "https://opencep.com/v1/05010000"
+AWESOMEAPI_URL = "https://cep.awesomeapi.com.br/json/05010000"
 
 CORREIOS_URL = (
     "https://apps.correios.com.br"
@@ -41,6 +42,7 @@ PROVIDER_NAMES = [
     "widenet",
     "brasilapi",
     "opencep",
+    "awesomeapi",
 ]
 
 
@@ -87,6 +89,18 @@ def stub_found(router, name):
                 "uf": "SP",
             }
         )
+    elif name == "awesomeapi":
+        router.get(AWESOMEAPI_URL).respond(
+            json={
+                "cep": "05010000",
+                "address_type": "Rua",
+                "address_name": "Caiubi",
+                "address": "Rua Caiubi",
+                "state": "SP",
+                "district": "Perdizes",
+                "city": "São Paulo",
+            }
+        )
     elif name == "correios":
         router.post(CORREIOS_URL).respond(text=CORREIOS_XML_FOUND)
     elif name == "correios-alt":
@@ -118,6 +132,10 @@ def stub_failed(router, name):
         )
     elif name == "opencep":
         router.get(OPENCEP_URL).respond(status_code=404, json={})
+    elif name == "awesomeapi":
+        router.get(AWESOMEAPI_URL).respond(
+            status_code=404, json={"code": "not_found"}
+        )
     elif name == "correios":
         router.post(CORREIOS_URL).respond(
             status_code=500, text=CORREIOS_XML_FAULT
@@ -165,6 +183,7 @@ def _clear_bundled_db_cache():
 
 
 __all__ = (
+    "AWESOMEAPI_URL",
     "BRASILAPI_URL",
     "CORREIOS_ALT_URL",
     "CORREIOS_URL",
