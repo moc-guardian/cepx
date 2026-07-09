@@ -12,13 +12,13 @@ first successful answer.
 
 ## Why cepx
 
-| | `local` (offline) | network providers |
-|---|---|---|
-| Latency | **~12 µs/lookup (~85k/s)** | one HTTP round-trip (tens–hundreds of ms) |
-| Network | none | required |
-| Rate limits / outages | none | subject to both |
-| Works air-gapped | ✅ | ❌ |
-| Coverage | ~1.14M CEPs (bundled) | whatever the live service returns |
+|                       | `local` (offline)          | network providers                         |
+| --------------------- | -------------------------- | ----------------------------------------- |
+| Latency               | **~12 µs/lookup (~85k/s)** | one HTTP round-trip (tens–hundreds of ms) |
+| Network               | none                       | required                                  |
+| Rate limits / outages | none                       | subject to both                           |
+| Works air-gapped      | ✅                         | ❌                                        |
+| Coverage              | ~1.14M CEPs (bundled)      | whatever the live service returns         |
 
 The offline path is **thousands of times faster** than any HTTP lookup and
 depends on nothing but your own process. Numbers above are the full public API
@@ -81,7 +81,7 @@ def lookup(cep):
 
 Do this rather than passing `providers=["local", ...]` in a single call: mixing
 `local` with network providers forces the concurrent race path, which spins up a
-thread pool and fires the network requests on *every* lookup, even the ones
+thread pool and fires the network requests on _every_ lookup, even the ones
 `local` answers instantly (they're just cancelled once `local` wins). The
 two-step form keeps hits fully offline at microsecond speed and only touches the
 network on genuine misses.
@@ -89,9 +89,25 @@ network on genuine misses.
 ## Network lookups
 
 Without the extra (or when you don't request `local`), cepx queries the live
-providers (Correios, ViaCEP, WideNet, BrasilAPI, OpenCEP, and AwesomeAPI) **concurrently**, and the
-**first successful** response wins. The lookup only fails once **every** provider
-fails, aggregating each error.
+providers **concurrently** and the **first successful** response wins. The
+lookup only fails once **every** provider fails, aggregating each error.
+
+These are the built-in providers. The first column is the exact string to pass
+in `providers=[...]`:
+
+| `providers=`     | Service                                                                    | Notes                                                                                       |
+| ---------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `"correios"`     | [Correios](https://www.correios.com.br) SIGEP (official postal authority)  | The official source; SOAP/XML endpoint, so usually the slowest to answer                    |
+| `"correios-alt"` | Correios address search (the `buscacepinter` site backend)                 | Same official data through the public site's endpoint                                       |
+| `"viacep"`       | [ViaCEP](https://viacep.com.br)                                            | Long-running, widely used free API                                                          |
+| `"widenet"`      | [apicep.com](https://apicep.com) (formerly WideNet)                        | Serves CDN-cached JSON                                                                      |
+| `"brasilapi"`    | [BrasilAPI](https://brasilapi.com.br)                                      | Itself an aggregator; fans out to several of the others, so it often wins the race          |
+| `"opencep"`      | [OpenCEP](https://opencep.com)                                             | Open, community-maintained database                                                         |
+| `"awesomeapi"`   | [AwesomeAPI](https://awesomeapi.com.br)                                    | Also returns lat/lng, DDD, and IBGE city code (cepx keeps the standard five address fields) |
+| `"local"`        | Offline SQLite database ([see above](#offline-lookups-the-local-provider)) | **Opt-in**, not part of the default race; microsecond lookups with no network               |
+
+Every provider except `local` is queried in the default race; pass a subset via
+`providers=[...]` to restrict the lookup to just those services.
 
 ```python
 import cepx

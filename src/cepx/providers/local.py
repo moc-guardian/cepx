@@ -92,6 +92,7 @@ class LocalProvider(Provider):
 
     name = "local"
     connection_error_message = "Failed to read the local CEP database."
+    in_default_set = False
 
     def __init__(self, db_path: str | None = None) -> None:
         self.db_path = _discover_db_path(db_path)

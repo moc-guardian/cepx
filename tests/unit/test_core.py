@@ -102,13 +102,13 @@ def test_aggregated_errors_preserve_provider_order(mock_all_failed):
     with pytest.raises(cepx.CepxError) as info:
         cepx.cep("05010000")
     assert [e.provider for e in info.value.errors] == [
+        "awesomeapi",
+        "brasilapi",
         "correios",
         "correios-alt",
+        "opencep",
         "viacep",
         "widenet",
-        "brasilapi",
-        "opencep",
-        "awesomeapi",
     ]
 
 

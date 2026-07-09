@@ -21,13 +21,13 @@ def test_strips_non_digits():
 def test_none_providers_uses_all():
     _, providers = prepare("05010000", None)
     assert [s.name for s in providers] == [
+        "awesomeapi",
+        "brasilapi",
         "correios",
         "correios-alt",
+        "opencep",
         "viacep",
         "widenet",
-        "brasilapi",
-        "opencep",
-        "awesomeapi",
     ]
 
 
