@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/moc-guardian/cepx/compare/v0.1.4...v0.1.5) (2026-07-09)
+
+
+### Features
+
+* bump brasilapi provider to v2 ([ba73b46](https://github.com/moc-guardian/cepx/commit/ba73b4675e1a033fb049dc0935a54f13670efa7d))
+
 ## [0.1.4](https://github.com/moc-guardian/cepx/compare/v0.1.3...v0.1.4) (2026-07-09)
 
 
