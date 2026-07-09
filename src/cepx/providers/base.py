@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from abc import ABC, abstractmethod
 
 import httpx
@@ -9,10 +10,25 @@ from cepx.errors import ProviderError
 
 DEFAULT_TIMEOUT = 30.0
 
+_REGISTRY: dict[str, type[Provider]] = {}
+
 
 class Provider(ABC):
     name: str
     connection_error_message: str
+
+    # Whether this provider is queried by default.
+    # Opt out by setting False, e.g. "local", which only
+    # answers when a database is present.
+    in_default_set: bool = True
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        super().__init_subclass__(**kwargs)
+
+        # Only concrete providers that declare their own `name` register;
+        # abstract intermediates (e.g. HttpProvider) are skipped.
+        if "name" in cls.__dict__ and not inspect.isabstract(cls):
+            _REGISTRY[cls.name] = cls
 
     @abstractmethod
     def resolve_sync(
