@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/moc-guardian/cepx/compare/v0.1.3...v0.1.4) (2026-07-09)
+
+
+### Features
+
+* add awesomeapi network provider ([#10](https://github.com/moc-guardian/cepx/issues/10)) ([5321af3](https://github.com/moc-guardian/cepx/commit/5321af3343efc3fa18c2a815ecfecb33e28be615))
+
 ## [0.1.3](https://github.com/moc-guardian/cepx/compare/v0.1.2...v0.1.3) (2026-07-09)
 
 
