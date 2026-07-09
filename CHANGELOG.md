@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/moc-guardian/cepx/compare/v0.1.2...v0.1.3) (2026-07-09)
+
+
+### Features
+
+* add opencep network provider ([#8](https://github.com/moc-guardian/cepx/issues/8)) ([d437c0e](https://github.com/moc-guardian/cepx/commit/d437c0e2118a5a8026a00a902484862b79f6ed89))
+
 ## [0.1.2](https://github.com/moc-guardian/cepx/compare/v0.1.1...v0.1.2) (2026-07-07)
 
 
