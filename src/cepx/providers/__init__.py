@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from cepx.providers.awesomeapi import AwesomeAPI
 from cepx.providers.base import DEFAULT_TIMEOUT, HttpProvider, Provider
 from cepx.providers.brasilapi import BrasilAPI
 from cepx.providers.correios import Correios
@@ -19,6 +20,7 @@ DEFAULT_PROVIDER_NAMES = (
     "widenet",
     "brasilapi",
     "opencep",
+    "awesomeapi",
 )
 
 
@@ -30,6 +32,7 @@ def get_available_providers() -> dict[str, Provider]:
         "widenet": WideNet(),
         "brasilapi": BrasilAPI(),
         "opencep": OpenCep(),
+        "awesomeapi": AwesomeAPI(),
         "local": LocalProvider(),
     }
 
@@ -37,6 +40,7 @@ def get_available_providers() -> dict[str, Provider]:
 __all__ = (
     "DEFAULT_PROVIDER_NAMES",
     "DEFAULT_TIMEOUT",
+    "AwesomeAPI",
     "BrasilAPI",
     "Correios",
     "CorreiosAlt",

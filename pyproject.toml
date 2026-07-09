@@ -14,6 +14,7 @@ keywords = [
     "widenet",
     "apicep",
     "opencep",
+    "awesomeapi",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
