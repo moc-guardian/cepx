@@ -18,7 +18,7 @@ class BrasilAPI(HttpProvider):
 
         return RequestSpec(
             method="GET",
-            url=f"https://brasilapi.com.br/api/cep/v1/{cep}",
+            url=f"https://brasilapi.com.br/api/cep/v2/{cep}",
             headers=headers,
         )
 

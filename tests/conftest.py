@@ -4,7 +4,7 @@ import httpx
 import pytest
 import respx
 
-BRASILAPI_URL = "https://brasilapi.com.br/api/cep/v1/05010000"
+BRASILAPI_URL = "https://brasilapi.com.br/api/cep/v2/05010000"
 VIACEP_URL = "https://viacep.com.br/ws/05010000/json/"
 WIDENET_URL = "https://cdn.apicep.com/file/apicep/05010-000.json"
 OPENCEP_URL = "https://opencep.com/v1/05010000"
