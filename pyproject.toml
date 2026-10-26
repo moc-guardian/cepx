@@ -69,6 +69,9 @@ dev = [
 line-length = 80
 src = ["src", "tests"]
 
+[tool.ruff.format]
+exclude = ["*.md"]
+
 [tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
