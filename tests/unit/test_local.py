@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 import sys
 import types
+from typing import Any
 
 import pytest
 
@@ -163,8 +164,8 @@ def test_local_no_database_available(monkeypatch):
 def test_local_discovers_bundled_cepx_data(db_path, monkeypatch):
     # Simulate the cepx-data package being installed and exposing db_path().
     monkeypatch.delenv("CEPX_DB", raising=False)
-    fake = types.ModuleType("cepx_data")
-    fake.db_path = lambda: db_path  # ty: ignore[unresolved-attribute]
+    fake: Any = types.ModuleType("cepx_data")
+    fake.db_path = lambda: db_path
     monkeypatch.setitem(sys.modules, "cepx_data", fake)
 
     assert LocalProvider().db_path == db_path
